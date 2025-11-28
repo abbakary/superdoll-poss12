@@ -650,6 +650,150 @@ html, body {
     color: #666;
 }
 
+/* Category Trends Chart Styles */
+.category-trends-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: var(--transition);
+}
+
+.category-trends-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.category-trends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.category-trends-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-trends-title i {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.chart-legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.chart-legend-color.sales {
+    background: linear-gradient(135deg, #a4de6c 0%, #70c657 100%);
+}
+
+.chart-legend-color.service {
+    background: linear-gradient(135deg, #ffc87d 0%, #ffab5c 100%);
+}
+
+.chart-legend-color.labour {
+    background: linear-gradient(135deg, #b19cd9 0%, #9370db 100%);
+}
+
+.chart-container-wrapper {
+    position: relative;
+    height: 350px;
+    margin-top: 15px;
+}
+
+.chart-empty-state {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.chart-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.category-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.category-stat-item {
+    background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.category-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.category-stat-item.sales {
+    border-left-color: #70c657;
+}
+
+.category-stat-item.service {
+    border-left-color: #ffab5c;
+}
+
+.category-stat-item.labour {
+    border-left-color: #9370db;
+}
+
+.category-stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.category-stat-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.category-stat-count {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 5px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
     .filter-row {
