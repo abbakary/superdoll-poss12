@@ -2947,7 +2947,12 @@ def orders_list(request: HttpRequest):
         customer_id = request.POST.get('customer_id')
         if not customer_id:
             return JsonResponse({'success': False, 'message': 'Customer ID is required'})
-        customer = get_object_or_404(Customer, id=customer_id)
+        # IMPORTANT: Enforce branch scope when retrieving customer to prevent cross-branch access
+        user_branch = get_user_branch(request.user)
+        customer_qs = Customer.objects.filter(id=customer_id)
+        if user_branch and not request.user.is_superuser:
+            customer_qs = customer_qs.filter(branch=user_branch)
+        customer = get_object_or_404(customer_qs)
         order_data = {
             'customer': customer,
             'type': request.POST.get('type'),

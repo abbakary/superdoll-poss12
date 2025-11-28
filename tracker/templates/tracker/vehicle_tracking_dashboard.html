@@ -7,6 +7,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <style>
 :root {
     --primary-color: #667eea;
@@ -650,6 +651,150 @@ html, body {
     color: #666;
 }
 
+/* Category Trends Chart Styles */
+.category-trends-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: var(--transition);
+}
+
+.category-trends-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.category-trends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.category-trends-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-trends-title i {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.chart-legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.chart-legend-color.sales {
+    background: linear-gradient(135deg, #a4de6c 0%, #70c657 100%);
+}
+
+.chart-legend-color.service {
+    background: linear-gradient(135deg, #ffc87d 0%, #ffab5c 100%);
+}
+
+.chart-legend-color.labour {
+    background: linear-gradient(135deg, #b19cd9 0%, #9370db 100%);
+}
+
+.chart-container-wrapper {
+    position: relative;
+    height: 350px;
+    margin-top: 15px;
+}
+
+.chart-empty-state {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.chart-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.category-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.category-stat-item {
+    background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.category-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.category-stat-item.sales {
+    border-left-color: #70c657;
+}
+
+.category-stat-item.service {
+    border-left-color: #ffab5c;
+}
+
+.category-stat-item.labour {
+    border-left-color: #9370db;
+}
+
+.category-stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.category-stat-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.category-stat-count {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 5px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
     .filter-row {
@@ -884,6 +1029,46 @@ html, body {
     </div>
 </div>
 
+<!-- Category Trends Chart -->
+<div class="category-trends-card">
+    <div class="category-trends-header">
+        <div class="category-trends-title">
+            <i class="fa fa-chart-bar"></i>
+            Category Trends Analysis
+        </div>
+        <small style="color: #666;">Revenue breakdown by service type</small>
+    </div>
+
+    <div class="chart-legend">
+        <div class="chart-legend-item">
+            <span class="chart-legend-color sales"></span>
+            <span>Sales</span>
+        </div>
+        <div class="chart-legend-item">
+            <span class="chart-legend-color service"></span>
+            <span>Service</span>
+        </div>
+        <div class="chart-legend-item">
+            <span class="chart-legend-color labour"></span>
+            <span>Labour</span>
+        </div>
+    </div>
+
+    <div class="chart-container-wrapper">
+        <canvas id="categoryTrendsChart"></canvas>
+        <div class="chart-empty-state" id="chartEmptyState">
+            <div class="chart-empty-icon">
+                <i class="fa fa-inbox"></i>
+            </div>
+            <p>No data available for the selected period</p>
+        </div>
+    </div>
+
+    <div class="category-stats" id="categoryStats">
+        <!-- Stats will be populated by JavaScript -->
+    </div>
+</div>
+
 <!-- Loading Indicator -->
 <div class="loading-spinner" id="loadingSpinner">
     <i class="fa fa-spinner fa-spin fa-2x"></i>
@@ -1076,6 +1261,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 showLoadingSpinner(false);
                 isInitialLoad = false;
             });
+
+        // Also reload category trends chart when filters change
+        loadCategoryTrendsChart();
     }
     
     function renderMetrics(summary) {
@@ -1365,7 +1553,184 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+    // Initialize category trends chart
+    let categoryTrendsChart = null;
+
+    function loadCategoryTrendsChart() {
+        const params = {
+            period: filters.period,
+            start_date: filters.start_date,
+            end_date: filters.end_date
+        };
+
+        const url = new URL('/tracker/api/vehicles/analytics/', window.location.origin);
+        Object.keys(params).forEach(key => {
+            if (params[key]) {
+                url.searchParams.append(key, params[key]);
+            }
+        });
+
+        fetch(url.toString())
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    renderCategoryTrendsChart(data);
+                } else {
+                    console.error('Chart data error:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading category trends:', error);
+            });
+    }
+
+    function renderCategoryTrendsChart(data) {
+        const chartCanvas = document.getElementById('categoryTrendsChart');
+        const emptyState = document.getElementById('chartEmptyState');
+        const statsContainer = document.getElementById('categoryStats');
+
+        if (!data.spending_by_type || data.spending_by_type.length === 0) {
+            chartCanvas.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'flex';
+            if (statsContainer) statsContainer.innerHTML = '';
+            return;
+        }
+
+        chartCanvas.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+
+        // Prepare chart data
+        const categories = data.spending_by_type.map(item => item.type.charAt(0).toUpperCase() + item.type.slice(1));
+        const amounts = data.spending_by_type.map(item => item.total);
+        const counts = data.spending_by_type.map(item => item.count);
+
+        // Define colors for each category type
+        const categoryColors = {
+            'sales': 'rgba(112, 198, 87, 0.7)',
+            'service': 'rgba(255, 171, 92, 0.7)',
+            'labour': 'rgba(147, 112, 219, 0.7)',
+            'inquiry': 'rgba(102, 126, 234, 0.7)',
+            'unknown': 'rgba(200, 200, 200, 0.7)'
+        };
+
+        const borderColors = {
+            'sales': 'rgba(112, 198, 87, 1)',
+            'service': 'rgba(255, 171, 92, 1)',
+            'labour': 'rgba(147, 112, 219, 1)',
+            'inquiry': 'rgba(102, 126, 234, 1)',
+            'unknown': 'rgba(200, 200, 200, 1)'
+        };
+
+        // Create datasets for each category
+        const chartDatasets = data.spending_by_type.map((item, index) => ({
+            label: categories[index],
+            data: [amounts[index]],
+            backgroundColor: categoryColors[item.type.toLowerCase()] || categoryColors['unknown'],
+            borderColor: borderColors[item.type.toLowerCase()] || borderColors['unknown'],
+            borderWidth: 2,
+            borderRadius: 6,
+            barPercentage: 0.6,
+            categoryPercentage: 0.8
+        }));
+
+        // Destroy existing chart if it exists
+        if (categoryTrendsChart) {
+            categoryTrendsChart.destroy();
+        }
+
+        const ctx = chartCanvas.getContext('2d');
+        categoryTrendsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: chartDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const idx = context.dataIndex;
+                                const amount = formatCurrency(amounts[idx]);
+                                const count = counts[idx];
+                                return `Total: ${amount} (${count} items)`;
+                            }
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        cornerRadius: 6,
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrencyShort(value);
+                            },
+                            font: { size: 11, weight: '600' },
+                            color: '#666'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 12, weight: '600' },
+                            color: '#333'
+                        },
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Render category statistics
+        renderCategoryStats(data.spending_by_type, statsContainer);
+    }
+
+    function renderCategoryStats(spendingData, container) {
+        if (!container) return;
+
+        const statsHTML = spendingData.map(item => {
+            const categoryType = item.type.toLowerCase();
+            const categoryLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+            return `
+                <div class="category-stat-item ${categoryType}">
+                    <div class="category-stat-value">${formatCurrency(item.total)}</div>
+                    <div class="category-stat-label">${categoryLabel}</div>
+                    <div class="category-stat-count">${item.count} transactions</div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = statsHTML;
+    }
+
+    function formatCurrencyShort(value) {
+        if (value >= 1000000) {
+            return 'M ' + (value / 1000000).toFixed(1);
+        } else if (value >= 1000) {
+            return 'K ' + (value / 1000).toFixed(1);
+        }
+        return value.toFixed(0);
+    }
+
     loadDashboardData();
+    loadCategoryTrendsChart();
 });
 </script>
 {% endblock %}

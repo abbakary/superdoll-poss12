@@ -299,13 +299,17 @@ class CustomerService:
         try:
             from django.utils import timezone as tz_module
             now = timezone.now()
+            # IMPORTANT: Use localdate() consistently for timezone-aware date comparisons
+            # This ensures the date is extracted in the server's configured timezone, not UTC
             today = tz_module.localdate(now) if hasattr(tz_module, 'localdate') else now.date()
 
             # Check if customer already visited today
             last_visit_today = False
             if customer.last_visit:
                 try:
-                    last_visit_date = customer.last_visit.date() if hasattr(customer.last_visit, 'date') else customer.last_visit
+                    # IMPORTANT: Also use localdate() for the last_visit to ensure consistent timezone handling
+                    # Previously this used .date() which extracted UTC date, causing timezone mismatches
+                    last_visit_date = tz_module.localdate(customer.last_visit) if hasattr(tz_module, 'localdate') else customer.last_visit.date() if hasattr(customer.last_visit, 'date') else customer.last_visit
                     last_visit_today = (last_visit_date == today)
                 except Exception:
                     last_visit_today = False
