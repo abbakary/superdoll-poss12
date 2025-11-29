@@ -1455,6 +1455,14 @@
 
   function handleFooterButtonClick(e) {
     e.preventDefault();
+    // Populate signature data from canvas
+    const signaturePad = document.getElementById("signaturePad");
+    const sigDataInput = document.getElementById("signatureDataInput");
+    if (signaturePad && sigDataInput) {
+      const signatureDataUrl = signaturePad.toDataURL("image/png", 0.8);
+      sigDataInput.value = signatureDataUrl;
+    }
+
 
     // Re-initialize delay reason fields before validation
     if (typeof initializeDelayReasonFields === 'function') {
