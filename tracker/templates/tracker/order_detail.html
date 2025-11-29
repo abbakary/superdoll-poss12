@@ -1472,7 +1472,7 @@
     // Check if delay reason is required and validate
     if (exceeds9HoursCheck && delayReasonText) {
       const reasonText = (delayReasonText.value || "").trim();
-      if (!selectedReason) {
+      if (!reasonText) {
         // Switch to details tab to show the delay reason field
         const detailsTab = document.getElementById('detailsTab');
         if (detailsTab) detailsTab.click();
