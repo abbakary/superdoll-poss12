@@ -1469,6 +1469,7 @@
       initializeDelayReasonFields();
     }
 
+    const delayReasonText = document.getElementById("delayReasonText");
     // Check if delay reason is required and validate
     if (exceeds9HoursCheck && delayReasonText) {
       const reasonText = (delayReasonText.value || "").trim();
