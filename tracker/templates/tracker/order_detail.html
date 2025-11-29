@@ -1470,7 +1470,6 @@
     }
 
     // Check if delay reason is required and validate
-    const delayReasonDropdownRef = document.getElementById('delayReasonDropdown');
     if (exceeds9HoursCheck && delayReasonText) {
       const reasonText = (delayReasonText.value || "").trim();
       if (!selectedReason) {
