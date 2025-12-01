@@ -2793,6 +2793,13 @@ def orders_list(request: HttpRequest):
         orders = orders.filter(priority=priority)
     if customer_id:
         orders = orders.filter(customer_id=customer_id)
+    if salesperson_id:
+        # Filter orders by invoices that have line items with this salesperson
+        try:
+            from .models import Invoice
+            orders = orders.filter(invoices__line_items__salesperson_id=salesperson_id).distinct()
+        except Exception as e:
+            logger.warning(f"Error filtering by salesperson: {e}")
     # Period filters: daily/weekly/monthly/yearly (aliases: today/week/month/year)
     dr = (date_range or '').lower()
     if dr in ("daily", "today"):
