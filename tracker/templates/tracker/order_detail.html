@@ -796,7 +796,33 @@
         </div>
       </div>
       {% elif order.type == 'sales' %}
-      
+      <div class="card shadow-sm mb-4 order-details-sales">
+        <div class="card-header bg-success text-white d-flex align-items-center">
+          <i class="fa fa-shopping-cart me-2"></i>
+          <h6 class="mb-0">Sales Order Details</h6>
+          <span class="badge bg-light text-success rounded-pill ms-2">SALES</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label fw-medium text-muted"><i class="fa fa-box me-2"></i>Item Name</label>
+              <div class="p-3 border rounded" style="background-color: #f8f9fa;">{{ order.item_name|default:'-' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium text-muted"><i class="fa fa-tag me-2"></i>Brand</label>
+              <div class="p-3 border rounded" style="background-color: #f8f9fa;">{{ order.brand|default:'-' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium text-muted"><i class="fa fa-cubes me-2"></i>Quantity</label>
+              <div class="p-3 border rounded" style="background-color: #f8f9fa;">{{ order.quantity|default:'-' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium text-muted"><i class="fa fa-circle me-2"></i>Tire Type</label>
+              <div class="p-3 border rounded" style="background-color: #f8f9fa;">{{ order.tire_type|default:'-' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
       {% elif order.type == 'inquiry' %}
       <div class="card shadow-sm mb-4 order-details-inquiry">
         <div class="card-header bg-light d-flex align-items-center">
@@ -832,6 +858,50 @@
               </div>
             </div>
             {% endif %}
+          </div>
+        </div>
+      </div>
+      {% elif order.type == 'mixed' %}
+      <div class="card shadow-sm mb-4 order-details-mixed">
+        <div class="card-header bg-dark text-white d-flex align-items-center">
+          <i class="fa fa-layer-group me-2"></i>
+          <h6 class="mb-0">Mixed Order Details</h6>
+          <span class="badge bg-light text-dark rounded-pill ms-2">MIXED</span>
+        </div>
+        <div class="card-body">
+          {% if order.mixed_categories %}
+          <div class="mb-3">
+            <label class="form-label fw-medium text-muted"><i class="fa fa-list me-2"></i>Order Categories</label>
+            <div class="p-3 border rounded" style="background-color: #f8f9fa;">
+              {% load order_filters %}
+              {{ order|order_type_display }}
+              {% if order.mixed_categories %}
+              <div class="mt-2"><small class="text-muted">Components: {{ order.mixed_categories }}</small></div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+          <div class="alert alert-info" role="alert">
+            <i class="fa fa-info-circle me-2"></i>
+            <strong>Mixed Order:</strong> This order contains items from multiple categories (e.g., service items, labour codes, and sales items).
+          </div>
+        </div>
+      </div>
+      {% elif order.type == 'unknown' %}
+      <div class="card shadow-sm mb-4 order-details-unknown">
+        <div class="card-header bg-secondary text-white d-flex align-items-center">
+          <i class="fa fa-question me-2"></i>
+          <h6 class="mb-0">Other/Unspecified Order Details</h6>
+          <span class="badge bg-light text-secondary rounded-pill ms-2">OTHER</span>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning" role="alert">
+            <i class="fa fa-exclamation-triangle me-2"></i>
+            <strong>Unspecified Item Codes:</strong> This order contains items with codes that are not yet categorized in the system. Please review the invoice items and contact support if needed.
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium text-muted"><i class="fa fa-clipboard me-2"></i>Description</label>
+            <div class="p-3 border rounded" style="background-color: #f8f9fa;">{{ order.description|default:'No description provided' }}</div>
           </div>
         </div>
       </div>
