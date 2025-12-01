@@ -783,6 +783,20 @@ def api_create_invoice_from_upload(request):
             inv.total_amount = total_amount or (subtotal + tax_amount)
             inv.created_by = request.user
 
+            # Handle salesperson assignment (for sales invoices)
+            salesperson_id = request.POST.get('salesperson_id')
+            if salesperson_id:
+                try:
+                    salesperson = Salesperson.objects.get(id=int(salesperson_id))
+                    inv.salesperson = salesperson
+                    logger.info(f"Assigned salesperson {salesperson.code} - {salesperson.name} to invoice")
+                except (Salesperson.DoesNotExist, ValueError):
+                    logger.warning(f"Invalid salesperson_id: {salesperson_id}, using default")
+                    inv.salesperson = Salesperson.get_default()
+            else:
+                # Use default salesperson if not provided
+                inv.salesperson = Salesperson.get_default()
+
             # Set invoice_number if not already set (for newly created invoices)
             if not getattr(inv, 'invoice_number', None) or not inv.invoice_number:
                 if posted_inv_number and not existing_invoice:
