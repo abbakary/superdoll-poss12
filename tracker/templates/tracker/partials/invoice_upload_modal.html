@@ -799,6 +799,17 @@
         inp.value = el.value;
       }
     });
+
+    if (salespersonSelect && salespersonSelect.value) {
+      let salespersonInput = invoiceForm.querySelector(`[name="salesperson_id"]`);
+      if (!salespersonInput) {
+        salespersonInput = document.createElement('input');
+        salespersonInput.type = 'hidden';
+        salespersonInput.name = 'salesperson_id';
+        hiddenFieldsDiv.appendChild(salespersonInput);
+      }
+      salespersonInput.value = salespersonSelect.value;
+    }
   }
 
   function formatDateForForm(dateStr) {
