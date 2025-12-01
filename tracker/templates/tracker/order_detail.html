@@ -1409,6 +1409,24 @@
       if (typeof initializeDelayReasonFields === 'function') {
         initializeDelayReasonFields();
       }
+      // Ensure signature pad canvas is available
+      setTimeout(function() {
+        const sigCanvas = document.getElementById('signaturePad');
+        if (!sigCanvas) {
+          // Trigger signature pad creation
+          const tabContent = document.getElementById('signatureSection');
+          if (tabContent && tabContent.style.display !== 'none') {
+            // The signature tab is visible, canvas should exist
+            // Force re-creation by clearing the container
+            const docContainer = document.getElementById('docSignContainer');
+            if (docContainer && !docContainer.querySelector('canvas')) {
+              docContainer.innerHTML = '';
+              docContainer.style.position = 'relative';
+              docContainer.style.overflow = 'hidden';
+            }
+          }
+        }
+      }, 150);
     });
   }
 
