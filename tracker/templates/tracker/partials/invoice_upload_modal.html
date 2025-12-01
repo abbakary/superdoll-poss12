@@ -645,10 +645,18 @@
 
     if (!items || items.length === 0) {
       lineItemsSection.style.display = 'none';
+      salespersonSection.style.display = 'none';
       return;
     }
 
     lineItemsSection.style.display = 'block';
+
+    const hasSalesItems = items.some(item => item.order_type === 'sales');
+    if (hasSalesItems) {
+      salespersonSection.style.display = 'block';
+    } else {
+      salespersonSection.style.display = 'none';
+    }
 
     items.forEach((item, idx) => {
       const code = item.code || '';
