@@ -2882,6 +2882,11 @@ def orders_list(request: HttpRequest):
         orders = paginator.get_page(page)
 
     branches = list(Branch.objects.filter(is_active=True).order_by('name').values_list('name', flat=True))
+
+    # Get active salespersons for the filter dropdown
+    from .models import Salesperson
+    salespersons = Salesperson.objects.filter(is_active=True).order_by('code')
+
     return render(request, "tracker/orders_list.html", {
         "orders": orders,
         "started_orders": started_orders,
@@ -2900,6 +2905,7 @@ def orders_list(request: HttpRequest):
         "started_completed": started_completed,
         "documents_uploaded": documents_uploaded,
         "branches": branches,
+        "salespersons": salespersons,
         "plate_search": (request.GET.get("plate_search") or ""),
         "started_status": request.GET.get("status", "all"),
         "started_sort": request.GET.get("sort_by", "-started_at"),
