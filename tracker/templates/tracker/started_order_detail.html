@@ -1403,8 +1403,84 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 
+// Signature Pad Initialization
+function initializeSignaturePad() {
+  const canvas = document.getElementById('completionSignaturePad');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  // Set canvas size to match container
+  function resizeCanvas() {
+    const container = canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    canvas.width = rect.width - 8; // Subtract padding
+    canvas.height = 200;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000';
+  }
+  resizeCanvas();
+
+  function getCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+    const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+    return { x, y };
+  }
+
+  function startDrawing(e) {
+    isDrawing = true;
+    const { x, y } = getCoordinates(e);
+    lastX = x;
+    lastY = y;
+  }
+
+  function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+
+    const { x, y } = getCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    lastX = x;
+    lastY = y;
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+  }
+
+  // Mouse events
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseleave', stopDrawing);
+
+  // Touch events
+  canvas.addEventListener('touchstart', startDrawing, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+  // Clear button
+  const clearBtn = document.getElementById('clearCompletionSignature');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  }
+}
+
 // Complete Order Logic with Delay Reason Form
 document.addEventListener('DOMContentLoaded', function(){
+  initializeSignaturePad();
   const completeBtn = document.getElementById('completeOrderBtn');
   if (!completeBtn) return;
 
