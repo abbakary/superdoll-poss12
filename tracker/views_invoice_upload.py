@@ -1143,7 +1143,7 @@ def api_create_invoice_from_upload(request):
                 'invoice_number': inv.invoice_number,
                 'order_id': order.id,
                 'customer_id': customer_obj.id,
-                'customer_found': customer_found,
+                'customer_found': not created,
                 'redirect_url': redirect_url
             })
     
