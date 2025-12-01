@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Customer, Vehicle, Order, InventoryItem, Branch, ServiceType, ServiceAddon, LabourCode, DelayReasonCategory, DelayReason
+from .models import Customer, Vehicle, Order, InventoryItem, Branch, ServiceType, ServiceAddon, LabourCode, DelayReasonCategory, DelayReason, Salesperson, Invoice, InvoiceLineItem
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
