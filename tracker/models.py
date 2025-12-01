@@ -734,6 +734,9 @@ class InvoiceLineItem(models.Model):
         help_text="Order type determined from item code or category"
     )
 
+    # Salesperson for this line item (if order_type is sales)
+    salesperson = models.ForeignKey('Salesperson', on_delete=models.SET_NULL, null=True, blank=True, related_name='line_items', help_text="Salesperson who made this sale")
+
     # Tracking
     created_at = models.DateTimeField(auto_now_add=True)
 
