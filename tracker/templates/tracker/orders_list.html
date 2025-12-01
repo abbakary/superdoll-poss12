@@ -409,10 +409,9 @@
               <td>
                 {% if o.invoices.all %}
                   {% for inv in o.invoices.all %}
-                    {% if inv.salesperson %}
+                    {% if inv.salesperson and forloop.first %}
                       <small class="text-dark d-block"><strong>{{ inv.salesperson.code }}</strong></small>
                       <small class="text-muted">{{ inv.salesperson.name }}</small>
-                      {% break %}
                     {% endif %}
                   {% endfor %}
                 {% else %}
