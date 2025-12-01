@@ -300,9 +300,9 @@ class OrderStartModal {
           showToast(`Order ${data.order_number} created successfully`, 'success');
         }
 
-        // Redirect or close modal
+        // Redirect to started orders dashboard
         setTimeout(() => {
-          window.location.href = `/tracker/orders/started/${data.order_id}/`;
+          window.location.href = `/tracker/orders/started/`;
         }, 1500);
       } else {
         const errorMsg = data.error || 'Failed to create order';
@@ -487,8 +487,8 @@ class OrderStartModal {
           );
 
           if (choice) {
-            // Continue with existing order - redirect to it
-            window.location.href = '/tracker/orders/started/' + data.order_id + '/';
+            // Continue with existing order - redirect to dashboard
+            window.location.href = '/tracker/orders/started/';
           } else {
             // Start new order - set force_new_order and pre-populate fields
             this.formData.customer_id = this.foundCustomer.id;

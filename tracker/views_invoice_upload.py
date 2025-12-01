@@ -1132,16 +1132,8 @@ def api_create_invoice_from_upload(request):
             except Exception as e:
                 logger.warning(f"Failed to create order components: {e}")
 
-            # Determine if customer was found (pre-selected) or created
-            customer_found = bool(customer_id)  # If pre-selected customer_id was provided, customer was found
-
-            # Determine redirect based on whether customer was found
-            # If customer was found/existing, redirect to regular order detail page
-            # If customer was created new, redirect to started order detail page
-            if customer_found:
-                redirect_url = f'/orders/{order.id}/'
-            else:
-                redirect_url = f'/orders/started/{order.id}/'
+            # Redirect to orders list after successful invoice creation
+            redirect_url = '/tracker/orders/'
 
             # Response - redirect to appropriate order detail page
             return JsonResponse({
