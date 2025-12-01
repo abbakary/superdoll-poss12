@@ -89,15 +89,16 @@
             </div>
 
     
-          <!-- Complete Order Modal - Delay Reason Form -->
+          <!-- Complete Order Modal - With Signature Capture -->
           <div class="modal fade" id="completeOrderModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
               <div class="modal-content">
-                <form id="completeOrderForm" method="post">
+                <form id="completeOrderForm" method="post" action="{% url 'tracker:complete_order' pk=order.id %}">
                   {% csrf_token %}
                   <input type="hidden" name="action" value="complete_order">
+                  <input type="hidden" name="signature_data" id="signatureDataInput">
                   <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fa fa-check-circle me-2"></i>Complete Order</h5>
+                    <h5 class="modal-title"><i class="fa fa-pen me-2"></i>Complete Order & Capture Signature</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
@@ -106,6 +107,22 @@
                       <i class="fa fa-exclamation-triangle me-2"></i>
                       <strong>Order Exceeds 9 Working Hours</strong>
                       <p class="mb-0 mt-2">This order has exceeded 9 working hours. You must select a delay reason before completing.</p>
+                    </div>
+
+                    <!-- Signature Canvas Section -->
+                    <div class="mb-4">
+                      <label class="form-label fw-bold text-dark">
+                        <i class="fa fa-pen me-2"></i>Customer Signature <span class="text-danger">*</span>
+                      </label>
+                      <div class="border rounded p-3 bg-light" style="border: 2px solid #dee2e6; cursor: crosshair; min-height: 200px; position: relative;">
+                        <canvas id="completionSignaturePad" style="display: block; width: 100%; height: 200px; border: 1px solid #ccc; border-radius: 4px; background: white; cursor: crosshair;"></canvas>
+                      </div>
+                      <div class="d-flex gap-2 mt-2">
+                        <button type="button" id="clearCompletionSignature" class="btn btn-sm btn-outline-secondary">
+                          <i class="fa fa-eraser me-1"></i>Clear Signature
+                        </button>
+                        <small class="text-muted ms-auto align-self-center">Use mouse or touch to draw</small>
+                      </div>
                     </div>
 
                     <!-- Delay Reason Form -->
