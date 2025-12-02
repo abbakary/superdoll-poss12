@@ -167,11 +167,11 @@ class LabourCode(models.Model):
     """
     Mapping of item codes to order types/categories.
     Used to automatically determine order type when processing invoices.
-    Category values: 'labour' or 'service' (service includes tyre, wheel, and other service codes)
+    Category values: 'labour', 'service', 'tyre service', 'sales', or 'unspecified'.
     """
     code = models.CharField(max_length=32, unique=True, db_index=True)
     description = models.CharField(max_length=255)
-    category = models.CharField(max_length=64, help_text="Order type category: 'labour' or 'service' (tyre/wheel services map to 'service')")
+    category = models.CharField(max_length=64, help_text="Order type category: 'labour', 'service', 'tyre service', 'sales', or 'unspecified'")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -260,10 +260,10 @@ class Order(models.Model):
     overrun_reported_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders_overrun_reported')
 
     # Delay reason for orders that exceeded 2+ hours
-    delay_reason = models.ForeignKey('DelayReason', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Reason for delay if order exceeded 2 hours")
+    delay_reason = models.ForeignKey('DelayReason', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Reason for delay if order exceeded 2 hours threshold")
     delay_reason_reported_at = models.DateTimeField(blank=True, null=True)
     delay_reason_reported_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders_delay_reason_reported')
-    exceeded_9_hours = models.BooleanField(default=False, help_text="Whether order exceeded 2 hours threshold")
+    exceeded_9_hours = models.BooleanField(default=False, help_text="Whether order exceeded the 2-hour threshold (used for delay reason tracking)")
 
     # Job card/identification number for quick order lookup (optional)
     job_card_number = models.CharField(max_length=64, blank=True, null=True, unique=True)

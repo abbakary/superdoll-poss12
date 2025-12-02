@@ -114,6 +114,8 @@ def _normalize_category_to_order_type(category: str) -> str:
     - 'labour' -> 'labour'
     - 'tyre service' -> 'service'
     - 'tyre service / makill' -> 'service'
+    - 'sales' -> 'sales'
+    - 'unspecified' -> 'unspecified'
     - None/empty -> 'unspecified'
     """
     if not category:
@@ -124,6 +126,10 @@ def _normalize_category_to_order_type(category: str) -> str:
     # Direct mapping
     if category_lower == 'labour':
         return 'labour'
+    elif category_lower == 'sales':
+        return 'sales'
+    elif category_lower == 'unspecified':
+        return 'unspecified'
     elif 'tyre' in category_lower or 'service' in category_lower:
         return 'service'
     else:

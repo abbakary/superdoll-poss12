@@ -67,6 +67,8 @@ def order_type_badge(order):
         badge_html = '<span class="badge bg-info rounded-pill text-white"><i class="fa fa-tools me-1"></i>Labour</span>'
     elif badge_type == 'inquiry':
         badge_html = '<span class="badge bg-danger rounded-pill text-white"><i class="fa fa-question-circle me-1"></i>Inquiry</span>'
+    elif badge_type == 'unspecified':
+        badge_html = '<span class="badge bg-secondary rounded-pill text-white"><i class="fa fa-question me-1"></i>Unspecified</span>'
     elif badge_type == 'unknown':
         badge_html = '<span class="badge bg-secondary rounded-pill text-white"><i class="fa fa-question me-1"></i>Other</span>'
     elif badge_type == 'mixed':
@@ -113,6 +115,8 @@ def _format_type(order_type):
         return 'Sales'
     elif order_type == 'inquiry':
         return 'Inquiry'
+    elif order_type == 'unspecified':
+        return 'Unspecified'
     elif order_type == 'unknown':
         return 'Other'
     else:
