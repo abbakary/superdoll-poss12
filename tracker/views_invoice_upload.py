@@ -739,7 +739,7 @@ def api_create_invoice_from_upload(request):
                             if order and not order.vehicle_id:
                                 order.vehicle = _veh
                                 # Save order with vehicle (function-level retry will handle locks)
-                                order.save(update_fields=['vehicle'])
+                                _save_with_retry(order, update_fields=['vehicle'])
                 except Exception:
                     pass
 
