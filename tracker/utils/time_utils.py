@@ -51,7 +51,7 @@ def get_order_overdue_status(order) -> dict:
 
     Returns:
         Dictionary with:
-        - is_overdue (bool): Whether the order is overdue (9+ hours elapsed)
+        - is_overdue (bool): Whether the order is overdue (2+ hours elapsed)
         - hours_elapsed (float): Calendar hours since start
         - overdue_by_hours (float): How many hours over the threshold (0 if not overdue)
     """
