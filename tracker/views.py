@@ -4273,6 +4273,14 @@ def link_invoice_to_order(request: HttpRequest, pk: int):
             is_primary=is_primary,
             linked_by=request.user
         )
+
+        # For additional invoices (not primary), clear the direct order FK to avoid duplication
+        # Only primary invoice should have invoice.order = order set
+        # Additional invoices should only exist in OrderInvoiceLink
+        if not is_primary and invoice.order_id:
+            invoice.order = None
+            invoice.save(update_fields=['order'])
+
         messages.success(request, 'Invoice linked to order successfully.')
         return redirect('tracker:order_detail', pk=order.id)
     except Invoice.DoesNotExist:

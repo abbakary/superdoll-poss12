@@ -3,6 +3,7 @@ Centralized service for creating and managing customers, vehicles, and orders.
 This ensures consistent deduplication, visit tracking, and code generation across all flows.
 """
 
+import json
 import logging
 from decimal import Decimal
 from datetime import datetime
@@ -573,7 +574,7 @@ class OrderService:
 
         Args:
             customer: The customer for this order
-            order_type: 'service', 'sales', or 'inquiry'
+            order_type: 'service', 'sales', 'inquiry', 'labour', 'unspecified', or 'mixed'
             branch: User's branch
             vehicle: Associated vehicle (optional)
             description: Order description
@@ -587,8 +588,10 @@ class OrderService:
         if not customer:
             raise ValueError("Customer is required")
 
-        if order_type not in ['service', 'sales', 'inquiry']:
-            raise ValueError(f"Invalid order type: {order_type}")
+        # Accept all valid order types from Order.TYPE_CHOICES
+        valid_order_types = ['service', 'sales', 'inquiry', 'labour', 'unspecified', 'mixed']
+        if order_type not in valid_order_types:
+            raise ValueError(f"Invalid order type: {order_type}. Must be one of: {', '.join(valid_order_types)}")
 
         try:
             with transaction.atomic():
@@ -620,6 +623,23 @@ class OrderService:
                     order_data['questions'] = kwargs.get('questions')
                     order_data['contact_preference'] = kwargs.get('contact_preference')
                     order_data['follow_up_date'] = kwargs.get('follow_up_date')
+
+                elif order_type == 'mixed':
+                    # For mixed orders, store the detected categories as JSON array
+                    mixed_categories = kwargs.get('mixed_categories')
+                    if mixed_categories:
+                        if isinstance(mixed_categories, (list, tuple)):
+                            order_data['mixed_categories'] = json.dumps(list(mixed_categories))
+                        elif isinstance(mixed_categories, str):
+                            order_data['mixed_categories'] = mixed_categories
+                    # Also handle sales fields if provided
+                    order_data['item_name'] = kwargs.get('item_name')
+                    order_data['brand'] = kwargs.get('brand')
+                    order_data['quantity'] = kwargs.get('quantity')
+                    order_data['tire_type'] = kwargs.get('tire_type', 'New')
+
+                # For labour and unspecified types, no special fields needed
+                # (they just use the base order fields)
 
                 # Create order
                 order = Order.objects.create(**order_data)
