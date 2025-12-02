@@ -1,6 +1,6 @@
 """
 Time utilities for calculating order duration and overdue status.
-Overdue threshold: 9 calendar hours (simple calculation).
+Overdue threshold: 2 calendar hours (simple calculation).
 """
 
 from datetime import datetime, timedelta
@@ -13,7 +13,7 @@ OVERDUE_THRESHOLD_HOURS = 2
 
 def is_order_overdue(started_at: datetime, now: datetime = None) -> bool:
     """
-    Check if an order has exceeded the 9-hour calendar threshold.
+    Check if an order has exceeded the 2-hour calendar threshold.
     Simple calculation: just check elapsed calendar hours, no working hour complexity.
 
     Args:
@@ -21,7 +21,7 @@ def is_order_overdue(started_at: datetime, now: datetime = None) -> bool:
         now: Current datetime (defaults to timezone.now())
 
     Returns:
-        True if order has been active for 9+ calendar hours, False otherwise
+        True if order has been active for 2+ calendar hours, False otherwise
     """
     if not started_at:
         return False
@@ -51,7 +51,7 @@ def get_order_overdue_status(order) -> dict:
 
     Returns:
         Dictionary with:
-        - is_overdue (bool): Whether the order is overdue (9+ hours elapsed)
+        - is_overdue (bool): Whether the order is overdue (2+ hours elapsed)
         - hours_elapsed (float): Calendar hours since start
         - overdue_by_hours (float): How many hours over the threshold (0 if not overdue)
     """
@@ -117,7 +117,7 @@ def estimate_completion_time(started_at: datetime, estimated_minutes: int = None
 
     Args:
         started_at: Order start datetime
-        estimated_minutes: Estimated duration in minutes (defaults to 9 hours)
+        estimated_minutes: Estimated duration in minutes (defaults to 2 hours)
 
     Returns:
         Dictionary with:

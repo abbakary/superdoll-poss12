@@ -3397,12 +3397,12 @@ def order_detail(request: HttpRequest, pk: int):
     except Exception:
         line_item_categories = {}
 
-    # Check if order exceeds 9+ working hours
+    # Check if order exceeds 2+ hours
     exceeds_9_hours = False
     if order.started_at:
         from .utils.time_utils import is_order_overdue
         exceeds_9_hours = is_order_overdue(order.started_at) if order.status == 'in_progress' else (
-            order.actual_duration and order.actual_duration >= (9 * 60)  # 9 hours in minutes
+            order.actual_duration and order.actual_duration >= (2 * 60)  # 2 hours in minutes
         )
 
     # Get delay reason categories and reasons
@@ -3534,7 +3534,7 @@ def complete_order(request: HttpRequest, pk: int):
         except Exception:
             pass
 
-    # Check if order exceeds 9+ working hours
+    # Check if order exceeds 2+ hours
     exceeds_9_hours = False
     try:
         from .utils.time_utils import is_order_overdue
@@ -3551,7 +3551,7 @@ def complete_order(request: HttpRequest, pk: int):
             o.overrun_reason = delay_reason_text
             o.overrun_reported_at = timezone.now()
             o.overrun_reported_by = request.user
-            # Mark as exceeded_9_hours if delay reason provided and order exceeded threshold
+            # Mark as exceeded_9_hours if delay reason provided and order exceeded 2 hour threshold
             if exceeds_9_hours:
                 o.exceeded_9_hours = True
             o.save(update_fields=['overrun_reason', 'overrun_reported_at', 'overrun_reported_by', 'exceeded_9_hours'])

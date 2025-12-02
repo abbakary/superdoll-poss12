@@ -144,8 +144,8 @@ def api_delay_analytics_summary(request):
     total_all = total_all_orders.count()
     delay_percentage = (total_delayed / total_all * 100) if total_all > 0 else 0
     
-    # Orders with exceeded 9 hours
-    exceeded_9_hours_count = orders_qs.filter(exceeded_9_hours=True).count()
+    # Orders with exceeded 2 hours threshold
+    exceeded_2_hours_count = orders_qs.filter(exceeded_9_hours=True).count()
     
     # Average time from start to completion for delayed orders
     delayed_orders_with_times = orders_qs.filter(
@@ -185,7 +185,7 @@ def api_delay_analytics_summary(request):
             'total_delayed_orders': total_delayed,
             'total_all_orders': total_all,
             'delay_percentage': round(delay_percentage, 2),
-            'exceeded_9_hours': exceeded_9_hours_count,
+            'exceeded_2_hours': exceeded_2_hours_count,
             'average_hours': round(avg_hours, 1),
         },
         'top_reasons': top_reasons
@@ -367,7 +367,7 @@ def api_delay_by_user(request):
         'delay_reason_reported_by__username'
     ).annotate(
         count=Count('id'),
-        exceeded_9h_count=Count('id', filter=Q(exceeded_9_hours=True))
+        exceeded_2h_count=Count('id', filter=Q(exceeded_9_hours=True))
     ).order_by('-count')
     
     data = []
@@ -381,7 +381,7 @@ def api_delay_by_user(request):
             'user_id': item['delay_reason_reported_by__id'],
             'user_name': user_name,
             'delay_count': item['count'],
-            'exceeded_9h_count': item['exceeded_9h_count'],
+            'exceeded_2h_count': item['exceeded_2h_count'],
         })
     
     return JsonResponse({
@@ -496,16 +496,16 @@ def api_delay_recommendations(request):
                 'impact': 'high'
             })
     
-    # Analysis 2: Orders exceeding 9 hours
+    # Analysis 2: Orders exceeding 2 hours threshold
     exceeded_count = orders_qs.filter(exceeded_9_hours=True).count()
-    if exceeded_count > 0:
-        pct = exceeded_count / orders_qs.count() * 100
+    if exceeded_count > 0 and orders_qs.count() > 0:
+        pct = (exceeded_count / orders_qs.count()) * 100
         priority = 'high' if pct > 20 else 'medium'
         recommendations.append({
             'priority': priority,
             'category': 'Urgent',
-            'title': f"{pct:.1f}% of Delays Exceed 9 Working Hours",
-            'description': f"{exceeded_count} orders exceeded 9 working hours. Implement preventive measures to reduce critical delays.",
+            'title': f"{pct:.1f}% of Delays Exceed 2 Hours",
+            'description': f"{exceeded_count} orders exceeded 2 hours. Implement preventive measures to reduce critical delays.",
             'impact': 'critical'
         })
     

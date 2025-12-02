@@ -171,7 +171,7 @@
                       </div>
 
                       <small class="text-muted d-block mt-2">
-                        <i class="fa fa-info-circle me-1"></i><span id="delayReasonHelpText">Select the reason if order exceeded 9 working hours.</span>
+                        <i class="fa fa-info-circle me-1"></i><span id="delayReasonHelpText">Select the reason if order exceeded 2 hours.</span>
                       </small>
                     </div>
 
@@ -1605,7 +1605,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if (exceeds9Hours) {
         const selectedReason = delayReasonDropdown.value;
         if (!selectedReason) {
-          delayReasonError.textContent = 'Order has exceeded 9 working hours. Please select a delay reason before completing.';
+          delayReasonError.textContent = 'Order has exceeded 2 hours. Please select a delay reason before completing.';
           delayReasonError.style.display = 'block';
           return false;
         }
