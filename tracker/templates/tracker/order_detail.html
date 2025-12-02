@@ -5047,15 +5047,62 @@ document.addEventListener('DOMContentLoaded', function() {
       if (additionalProgressWrap) additionalProgressWrap.style.display = p > 0 && p < 100 ? 'block' : (p >= 100 ? 'block' : 'none');
     }
 
+    let additionalSalespersonList = [];
+
+    async function loadAdditionalSalespersons() {
+      try {
+        const response = await fetch('{% url "tracker:api_get_salespersons" %}', {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (!response.ok) {
+          console.error('Failed to load salespersons:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+        additionalSalespersonList = data.salespersons || [];
+
+        const salespersonSelect = document.getElementById('additionalSalespersonSelect');
+        if (salespersonSelect) {
+          salespersonSelect.innerHTML = '<option value="">-- Select Salesperson --</option>';
+          additionalSalespersonList.forEach(sp => {
+            const option = document.createElement('option');
+            option.value = sp.id;
+            option.textContent = `${sp.code} - ${sp.name}`;
+            if (sp.is_default) {
+              option.selected = true;
+            }
+            salespersonSelect.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading salespersons:', err);
+      }
+    }
+
     function populateAdditionalLineItems(items) {
       additionalLineItemsBody.innerHTML = '';
 
       if (!items || items.length === 0) {
         additionalLineItemsSection.style.display = 'none';
+        const additionalSalespersonSection = document.getElementById('additionalSalespersonSection');
+        if (additionalSalespersonSection) {
+          additionalSalespersonSection.style.display = 'none';
+        }
         return;
       }
 
       additionalLineItemsSection.style.display = 'block';
+
+      const hasSalesItems = items.some(item => item.order_type === 'sales');
+      const additionalSalespersonSection = document.getElementById('additionalSalespersonSection');
+      if (additionalSalespersonSection) {
+        additionalSalespersonSection.style.display = hasSalesItems ? 'block' : 'none';
+      }
 
       items.forEach((item, idx) => {
         const code = item.code || '';
