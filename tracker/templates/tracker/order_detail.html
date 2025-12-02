@@ -5031,6 +5031,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!additionalUploadBtn) return;
 
+    loadAdditionalSalespersons();
+
     function getCSRF() {
       const name = 'csrftoken=';
       const parts = document.cookie.split(';');
