@@ -144,7 +144,7 @@ def api_delay_analytics_summary(request):
     total_all = total_all_orders.count()
     delay_percentage = (total_delayed / total_all * 100) if total_all > 0 else 0
     
-    # Orders with exceeded 9 hours
+    # Orders with exceeded 2 hours
     exceeded_9_hours_count = orders_qs.filter(exceeded_9_hours=True).count()
     
     # Average time from start to completion for delayed orders
