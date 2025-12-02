@@ -426,7 +426,7 @@ def api_create_invoice_from_upload(request):
                                 customer_obj.organization_name = org_name
                             if tax_num:
                                 customer_obj.tax_number = tax_num
-                            customer_obj.save()
+                            _save_with_retry(customer_obj)
                             logger.info(f"Updated temporary customer {customer_obj.id} with extracted details from invoice")
                 except Exception as e:
                     logger.warning(f"Failed to check/update temporary customer: {e}")
@@ -460,7 +460,7 @@ def api_create_invoice_from_upload(request):
                         if tax_num and (not customer_obj.tax_number or customer_obj.tax_number != tax_num):
                             customer_obj.tax_number = tax_num; updated = True
                         if updated:
-                            customer_obj.save()
+                            _save_with_retry(customer_obj)
                         logger.info(f"Found existing customer by name for invoice upload: {customer_obj.id} - {customer_name}")
                     else:
                         # Phone is provided - check for existing customer with this phone first
@@ -496,7 +496,7 @@ def api_create_invoice_from_upload(request):
                                 updated = True
 
                             if updated:
-                                customer_obj.save()
+                                _save_with_retry(customer_obj)
 
                             logger.info(f"Found existing customer by phone for invoice upload: {customer_obj.id} - {customer_name}")
                         else:
@@ -546,12 +546,14 @@ def api_create_invoice_from_upload(request):
                         if not existing_customer:
                             old_code = customer_obj.code
                             customer_obj.code = extracted_code_no
-                            customer_obj.save(update_fields=['code'])
+                            _save_with_retry(customer_obj, update_fields=['code'])
                             logger.info(f"Updated customer {customer_obj.id} code from {old_code} to {extracted_code_no} in branch {customer_obj.branch}")
                         else:
                             logger.warning(f"Code {extracted_code_no} already used by another customer {existing_customer.id} in branch {customer_obj.branch}, keeping current code")
                 except Exception as e:
                     logger.warning(f"Failed to update customer code with extracted code_no: {e}")
+                    # Don't let this error break the rest of the transaction
+                    # Continue processing the invoice
 
             # Extract plate from reference if not explicitly provided
             # The reference field from invoice may contain the vehicle plate number
@@ -737,7 +739,7 @@ def api_create_invoice_from_upload(request):
                             if order and not order.vehicle_id:
                                 order.vehicle = _veh
                                 # Save order with vehicle (function-level retry will handle locks)
-                                order.save(update_fields=['vehicle'])
+                                _save_with_retry(order, update_fields=['vehicle'])
                 except Exception:
                     pass
 
@@ -805,7 +807,7 @@ def api_create_invoice_from_upload(request):
                     inv.generate_invoice_number()
 
             # Save invoice (function-level retry will handle database locks)
-            inv.save()
+            _save_with_retry(inv)
 
             # Save uploaded document if provided (optional in two-step flow)
             try:
@@ -952,7 +954,7 @@ def api_create_invoice_from_upload(request):
 
                     logger.info(f"Calculated invoice totals from line items: subtotal={inv.subtotal}, tax={inv.tax_amount}, total={inv.total_amount}")
 
-            inv.save(update_fields=['subtotal', 'tax_amount', 'total_amount'])
+            _save_with_retry(inv, update_fields=['subtotal', 'tax_amount', 'total_amount'])
 
             # Update order type aggregating categories from ALL linked invoices (primary + additional)
             if order:
@@ -1029,7 +1031,7 @@ def api_create_invoice_from_upload(request):
 
                     order.type = final_type
                     order.mixed_categories = json.dumps(final_categories) if final_type == 'mixed' and final_categories else None
-                    order.save(update_fields=['type', 'mixed_categories'])
+                    _save_with_retry(order, update_fields=['type', 'mixed_categories'])
                     logger.info(f"Updated order {order.id} aggregated type to {final_type}, categories: {final_categories}")
                 except Exception as e:
                     logger.warning(f"Failed to aggregate order type from linked invoices: {e}")
@@ -1089,6 +1091,23 @@ def api_create_invoice_from_upload(request):
             except Exception as e:
                 logger.warning(f"Failed to update order from invoice: {e}")
 
+            # Create OrderInvoiceLink to link invoice to order for display on order detail page
+            # This ensures additional invoices are shown in the "Additional Invoices" section
+            if order and inv:
+                try:
+                    from .models import OrderInvoiceLink
+                    link, created = OrderInvoiceLink.objects.get_or_create(
+                        order=order,
+                        invoice=inv,
+                        defaults={'is_primary': False}
+                    )
+                    if created:
+                        logger.info(f"Created OrderInvoiceLink for invoice {inv.id} to order {order.id}")
+                    else:
+                        logger.info(f"OrderInvoiceLink already exists for invoice {inv.id} and order {order.id}")
+                except Exception as e:
+                    logger.warning(f"Failed to create OrderInvoiceLink for invoice {inv.id}: {e}")
+
             # Handle additional order types/components
             try:
                 additional_order_types_json = request.POST.get('additional_order_types', '[]')
@@ -1121,7 +1140,7 @@ def api_create_invoice_from_upload(request):
                         if not created and reason:
                             component.reason = reason
                             component.invoice = inv
-                            component.save(update_fields=['reason', 'invoice'])
+                            _save_with_retry(component, update_fields=['reason', 'invoice'])
                         elif created:
                             logger.info(f"Created OrderComponent for order {order.id}: type={component_type}")
                         else:
@@ -1143,7 +1162,7 @@ def api_create_invoice_from_upload(request):
                 'invoice_number': inv.invoice_number,
                 'order_id': order.id,
                 'customer_id': customer_obj.id,
-                'customer_found': customer_found,
+                'customer_found': not created,
                 'redirect_url': redirect_url
             })
     

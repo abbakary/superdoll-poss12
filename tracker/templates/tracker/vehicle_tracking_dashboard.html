@@ -924,7 +924,7 @@ html, body {
 
 <!-- Quick Overview Cards -->
 <div class="row g-3 mb-4" id="quickOverviewCards">
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-2 col-lg-3 col-md-6">
         <div class="tracking-status-card active-vehicles">
             <div class="status-icon"><i class="fa fa-car-alt"></i></div>
             <div class="status-content">
@@ -934,7 +934,7 @@ html, body {
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-2 col-lg-3 col-md-6">
         <div class="tracking-status-card services-completed">
             <div class="status-icon"><i class="fa fa-check-circle"></i></div>
             <div class="status-content">
@@ -944,7 +944,7 @@ html, body {
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-2 col-lg-3 col-md-6">
         <div class="tracking-status-card repeat-customers">
             <div class="status-icon"><i class="fa fa-redo-alt"></i></div>
             <div class="status-content">
@@ -954,7 +954,7 @@ html, body {
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6">
+    <div class="col-xl-2 col-lg-3 col-md-6">
         <div class="tracking-status-card total-revenue">
             <div class="status-icon"><i class="fa fa-money-bill-wave"></i></div>
             <div class="status-content">
@@ -1299,9 +1299,15 @@ document.addEventListener('DOMContentLoaded', function() {
             row.className = 'vehicle-row-expandable';
 
             const serviceTypesBadges = vehicle.service_types && vehicle.service_types.length > 0
-                ? vehicle.service_types.map(type =>
-                    `<span class="badge-custom badge-service" style="font-size: 0.75rem;">${type}</span>`
-                ).join(' ')
+                ? vehicle.service_types.map(type => {
+                    let badgeClass = 'badge-service';
+                    if (type.toLowerCase() === 'sales') {
+                        badgeClass = 'badge-sales';
+                    } else if (type.toLowerCase() === 'labour') {
+                        badgeClass = 'badge-labour';
+                    }
+                    return `<span class="badge-custom ${badgeClass}" style="font-size: 0.75rem;">${type}</span>`;
+                }).join(' ')
                 : '<span style="color: #999;">-</span>';
 
             const returningBadge = vehicle.is_returning ? '<span class="badge-custom badge-returning"><i class="fa fa-redo me-1"></i>Returning</span>' : '';
@@ -1409,7 +1415,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div>Order: <strong>${invoice.order_number || 'N/A'}</strong></div>
                         ${invoice.categories && invoice.categories.length > 0 ? `
                             <div style="margin-top: 6px;">
-                                Categories: ${invoice.categories.map(cat => `<span class="badge-custom badge-service" style="font-size: 0.7rem;">${cat}</span>`).join(' ')}
+                                Categories: ${invoice.categories.map(cat => {
+                                    let badgeClass = 'badge-service';
+                                    if (cat.toLowerCase() === 'sales') {
+                                        badgeClass = 'badge-sales';
+                                    } else if (cat.toLowerCase() === 'labour') {
+                                        badgeClass = 'badge-labour';
+                                    }
+                                    return `<span class="badge-custom ${badgeClass}" style="font-size: 0.7rem;">${cat}</span>`;
+                                }).join(' ')}
                             </div>
                         ` : ''}
                     </div>
@@ -1430,11 +1444,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                     const num = parseFloat(qty);
                                     return Number.isInteger(num) ? num.toString() : num.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
                                 };
+                                const itemBadgeClass = (() => {
+                                    const cat = (item.category || '').toLowerCase();
+                                    if (cat === 'sales') return 'badge-sales';
+                                    if (cat === 'labour') return 'badge-labour';
+                                    return 'badge-service';
+                                })();
                                 return `
                                 <tr>
                                     <td><code style="font-size: 0.8rem;">${item.code || '-'}</code></td>
                                     <td style="font-size: 0.85rem;">${item.description}</td>
-                                    <td><span class="badge-custom badge-service" style="font-size: 0.7rem;">${item.category}</span></td>
+                                    <td><span class="badge-custom ${itemBadgeClass}" style="font-size: 0.7rem;">${item.category}</span></td>
                                     <td style="text-align: center;">${formatQty(item.qty)}</td>
                                     <td style="text-align: right;">${formatCurrency(item.unit_price)}</td>
                                     <td style="text-align: right;"><strong>${formatCurrency(item.total)}</strong></td>
