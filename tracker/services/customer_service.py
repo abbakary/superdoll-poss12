@@ -623,6 +623,23 @@ class OrderService:
                     order_data['contact_preference'] = kwargs.get('contact_preference')
                     order_data['follow_up_date'] = kwargs.get('follow_up_date')
 
+                elif order_type == 'mixed':
+                    # For mixed orders, store the detected categories as JSON array
+                    mixed_categories = kwargs.get('mixed_categories')
+                    if mixed_categories:
+                        if isinstance(mixed_categories, (list, tuple)):
+                            order_data['mixed_categories'] = json.dumps(list(mixed_categories))
+                        elif isinstance(mixed_categories, str):
+                            order_data['mixed_categories'] = mixed_categories
+                    # Also handle sales fields if provided
+                    order_data['item_name'] = kwargs.get('item_name')
+                    order_data['brand'] = kwargs.get('brand')
+                    order_data['quantity'] = kwargs.get('quantity')
+                    order_data['tire_type'] = kwargs.get('tire_type', 'New')
+
+                # For labour and unspecified types, no special fields needed
+                # (they just use the base order fields)
+
                 # Create order
                 order = Order.objects.create(**order_data)
 
