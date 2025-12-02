@@ -5265,6 +5265,18 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
+      const salespersonSelect = document.getElementById('additionalSalespersonSelect');
+      if (salespersonSelect && salespersonSelect.value) {
+        let salespersonInput = additionalInvoiceForm.querySelector(`[name="salesperson_id"]`);
+        if (!salespersonInput) {
+          salespersonInput = document.createElement('input');
+          salespersonInput.type = 'hidden';
+          salespersonInput.name = 'salesperson_id';
+          additionalHiddenFieldsDiv.appendChild(salespersonInput);
+        }
+        salespersonInput.value = salespersonSelect.value;
+      }
+
       addAdditionalInvoiceBtn.disabled = true;
       const originalBtnText = addAdditionalInvoiceBtn.innerHTML;
       addAdditionalInvoiceBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Adding...';
