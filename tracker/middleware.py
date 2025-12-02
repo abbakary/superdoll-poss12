@@ -20,7 +20,7 @@ class AutoProgressOrdersMiddleware(MiddlewareMixin):
     """Automatically progress orders from 'created' to 'in_progress' after 10 minutes
     without requiring users to visit the order page.
 
-    Also marks orders as overdue based on working hours (9 hours: 8 AM - 5 PM).
+    Also marks orders as overdue based on 2 hour threshold.
     Also computes header notification metrics for stale in-progress orders (>24h).
     """
     def process_request(self, request):
