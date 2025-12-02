@@ -418,7 +418,7 @@
             if (summary.success) {
                 document.getElementById('totalDelayedOrders').textContent = summary.summary.total_delayed_orders;
                 document.getElementById('delayRate').textContent = summary.summary.delay_percentage + '%';
-                document.getElementById('exceeded2Hours').textContent = summary.summary.exceeded_9_hours;
+                document.getElementById('exceeded2Hours').textContent = summary.summary.exceeded_2_hours;
                 document.getElementById('avgDuration').textContent = summary.summary.average_hours;
                 updateTopReasons(summary.top_reasons);
             }
