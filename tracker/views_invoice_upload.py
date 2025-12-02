@@ -954,7 +954,7 @@ def api_create_invoice_from_upload(request):
 
                     logger.info(f"Calculated invoice totals from line items: subtotal={inv.subtotal}, tax={inv.tax_amount}, total={inv.total_amount}")
 
-            inv.save(update_fields=['subtotal', 'tax_amount', 'total_amount'])
+            _save_with_retry(inv, update_fields=['subtotal', 'tax_amount', 'total_amount'])
 
             # Update order type aggregating categories from ALL linked invoices (primary + additional)
             if order:
