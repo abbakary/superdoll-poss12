@@ -289,7 +289,7 @@ def api_delay_trends(request):
         data.append({
             'date': date_str,
             'delayed_count': item['count'],
-            'exceeded_9h': item['exceeded_9h'],
+            'exceeded_2h': item['exceeded_2h'],
             'total_orders': total_day,
             'delay_rate': round(item['count'] / total_day * 100, 1) if total_day > 0 else 0,
         })
