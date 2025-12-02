@@ -567,9 +567,9 @@ def api_upload_extract_invoice(request):
                 code = it.get('code')
 
                 # Determine order_type from code
-                order_type = 'unknown'
+                order_type = 'unspecified'
                 if code and code in code_order_types:
-                    order_type = code_order_types[code].get('order_type', 'unknown')
+                    order_type = code_order_types[code].get('order_type', 'unspecified')
 
                 to_create.append(InvoiceLineItem(
                     invoice=inv,
