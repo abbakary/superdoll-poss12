@@ -497,7 +497,7 @@ def started_order_detail(request, order_id):
                 if exceeds_9_hours:
                     delay_reason_id = request.POST.get('delay_reason')
                     if not delay_reason_id:
-                        messages.error(request, 'Order has exceeded 9 working hours. Please select a delay reason before completing.')
+                        messages.error(request, 'Order has exceeded 2 hours. Please select a delay reason before completing.')
                         return redirect('tracker:started_order_detail', order_id=order.id)
 
                     try:
@@ -510,7 +510,7 @@ def started_order_detail(request, order_id):
                         messages.error(request, 'Selected delay reason not found. Please select a valid reason.')
                         return redirect('tracker:started_order_detail', order_id=order.id)
                 else:
-                    # For orders not exceeding 9 hours, save optional delay reason if provided
+                    # For orders not exceeding 2 hours, save optional delay reason if provided
                     delay_reason_id = request.POST.get('delay_reason')
                     if delay_reason_id:
                         try:
