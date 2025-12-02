@@ -22,6 +22,12 @@ from .utils import get_user_branch
 logger = logging.getLogger(__name__)
 
 
+def _get_category_display(category_code):
+    """Convert category code to display name using DelayReasonCategory choices"""
+    category_choices = dict(DelayReasonCategory.CATEGORY_CHOICES)
+    return category_choices.get(category_code, category_code)
+
+
 @login_required
 @permission_required('tracker.view_order', raise_exception=True)
 def delay_analytics_dashboard(request):
