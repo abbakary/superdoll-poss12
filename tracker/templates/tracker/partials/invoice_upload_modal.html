@@ -678,10 +678,11 @@
       const categoryBadgeMap = {
         'badge-labour': { bg: 'bg-info', icon: 'fa-tools', text: 'Labour' },
         'badge-service': { bg: 'bg-primary', icon: 'fa-wrench', text: 'Service' },
-        'badge-sales': { bg: 'bg-success', icon: 'fa-shopping-cart', text: 'Sales' }
+        'badge-sales': { bg: 'bg-success', icon: 'fa-shopping-cart', text: 'Sales' },
+        'badge-unspecified': { bg: 'bg-secondary', icon: 'fa-question-circle', text: 'Unspecified' }
       };
 
-      const badgeInfo = categoryBadgeMap[colorClass] || categoryBadgeMap['badge-sales'];
+      const badgeInfo = categoryBadgeMap[colorClass] || categoryBadgeMap['badge-unspecified'];
       const categoryBadge = `<span class="badge ${badgeInfo.bg} rounded-pill"><i class="fa ${badgeInfo.icon} me-1"></i>${badgeInfo.text}</span>`;
 
       const row = document.createElement('tr');
