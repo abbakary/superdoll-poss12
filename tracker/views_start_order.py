@@ -543,13 +543,13 @@ def started_order_detail(request, order_id):
     
     active_tab = request.GET.get('tab', 'overview')
 
-    # Check if order exceeds 9+ working hours
+    # Check if order exceeds 2+ hours
     exceeds_9_hours = False
     if order.started_at:
         try:
             from .utils.time_utils import is_order_overdue
             exceeds_9_hours = is_order_overdue(order.started_at) if order.status == 'in_progress' else (
-                order.actual_duration and order.actual_duration >= (9 * 60)  # 9 hours in minutes
+                order.actual_duration and order.actual_duration >= (2 * 60)  # 2 hours in minutes
             )
         except Exception:
             exceeds_9_hours = False
