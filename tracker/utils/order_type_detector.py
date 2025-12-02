@@ -81,8 +81,8 @@ def determine_order_type_from_codes(item_codes: List[str]) -> Tuple[str, List[st
 
     # Determine final order type
     if len(order_types_found) == 0:
-        final_order_type = 'sales'
-        final_categories = ['sales']
+        final_order_type = 'unspecified'
+        final_categories = []
     elif len(order_types_found) == 1:
         final_order_type = list(order_types_found)[0]
         final_categories = sorted(list(categories_found))
