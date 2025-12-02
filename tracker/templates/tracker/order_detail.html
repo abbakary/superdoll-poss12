@@ -360,27 +360,39 @@
               </div>
             </div>
 
-            <!-- Delay Reason Display - Shows red alert when 9+ hours exceeded with delay reason -->
+            <!-- Delay Reason Display - Shows red alert when 2+ hours exceeded with delay reason -->
             {% if order.overrun_reason and order.exceeded_9_hours %}
             <div class="col-12">
-              <div class="alert alert-danger bg-danger bg-opacity-10 border-danger">
-                <div class="d-flex align-items-start">
-                  <i class="fa fa-exclamation-circle text-danger me-3 mt-1"></i>
-                  <div>
-                    <strong><i class="fa fa-clock me-2"></i>Order Exceeded 9 Working Hours (Took Longer)</strong>
-                    <p class="mb-0 mt-2 text-dark">{{ order.overrun_reason }}</p>
+              <div class="card border-danger shadow-sm delay-reason-card">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start">
+                    <div class="delay-reason-icon bg-danger bg-opacity-10 rounded-circle p-3 me-4">
+                      <i class="fa fa-exclamation-triangle text-danger fa-lg"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="card-title text-danger fw-bold mb-2 d-flex align-items-center">
+                        <i class="fa fa-clock me-2"></i>Order Exceeded Expected Time (Took Longer)
+                      </h6>
+                      <p class="card-text text-dark mb-0 ps-0 lh-base">{{ order.overrun_reason }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             {% elif order.overrun_reason %}
             <div class="col-12">
-              <div class="alert alert-info bg-info bg-opacity-10 border-info">
-                <div class="d-flex align-items-start">
-                  <i class="fa fa-comment-dots text-info me-3 mt-1"></i>
-                  <div>
-                    <strong>Delay Reason</strong>
-                    <p class="mb-0 mt-1 text-dark">{{ order.overrun_reason }}</p>
+              <div class="card border-info shadow-sm delay-reason-card">
+                <div class="card-body p-4">
+                  <div class="d-flex align-items-start">
+                    <div class="delay-reason-icon bg-info bg-opacity-10 rounded-circle p-3 me-4">
+                      <i class="fa fa-comment-dots text-info fa-lg"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="card-title text-info fw-bold mb-2 d-flex align-items-center">
+                        <i class="fa fa-info-circle me-2"></i>Delay Reason Reported
+                      </h6>
+                      <p class="card-text text-dark mb-0 ps-0 lh-base">{{ order.overrun_reason }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2524,6 +2536,51 @@ document.addEventListener('DOMContentLoaded', function() {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Delay Reason Card Styles */
+  .delay-reason-card {
+    border-left: 4px solid;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .delay-reason-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .delay-reason-card.border-danger {
+    border-left-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.02);
+  }
+
+  .delay-reason-card.border-info {
+    border-left-color: #0dcaf0;
+    background-color: rgba(13, 202, 240, 0.02);
+  }
+
+  .delay-reason-icon {
+    min-width: 56px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .delay-reason-card .card-title {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+  }
+
+  .delay-reason-card .card-text {
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.6;
   }
 
   .time-metrics-group,
@@ -5031,6 +5088,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!additionalUploadBtn) return;
 
+    loadAdditionalSalespersons();
+
     function getCSRF() {
       const name = 'csrftoken=';
       const parts = document.cookie.split(';');
@@ -5047,15 +5106,62 @@ document.addEventListener('DOMContentLoaded', function() {
       if (additionalProgressWrap) additionalProgressWrap.style.display = p > 0 && p < 100 ? 'block' : (p >= 100 ? 'block' : 'none');
     }
 
+    let additionalSalespersonList = [];
+
+    async function loadAdditionalSalespersons() {
+      try {
+        const response = await fetch('{% url "tracker:api_get_salespersons" %}', {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (!response.ok) {
+          console.error('Failed to load salespersons:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+        additionalSalespersonList = data.salespersons || [];
+
+        const salespersonSelect = document.getElementById('additionalSalespersonSelect');
+        if (salespersonSelect) {
+          salespersonSelect.innerHTML = '<option value="">-- Select Salesperson --</option>';
+          additionalSalespersonList.forEach(sp => {
+            const option = document.createElement('option');
+            option.value = sp.id;
+            option.textContent = `${sp.code} - ${sp.name}`;
+            if (sp.is_default) {
+              option.selected = true;
+            }
+            salespersonSelect.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading salespersons:', err);
+      }
+    }
+
     function populateAdditionalLineItems(items) {
       additionalLineItemsBody.innerHTML = '';
 
       if (!items || items.length === 0) {
         additionalLineItemsSection.style.display = 'none';
+        const additionalSalespersonSection = document.getElementById('additionalSalespersonSection');
+        if (additionalSalespersonSection) {
+          additionalSalespersonSection.style.display = 'none';
+        }
         return;
       }
 
       additionalLineItemsSection.style.display = 'block';
+
+      const hasSalesItems = items.some(item => item.order_type === 'sales');
+      const additionalSalespersonSection = document.getElementById('additionalSalespersonSection');
+      if (additionalSalespersonSection) {
+        additionalSalespersonSection.style.display = hasSalesItems ? 'block' : 'none';
+      }
 
       items.forEach((item, idx) => {
         const code = item.code || '';
@@ -5214,6 +5320,18 @@ document.addEventListener('DOMContentLoaded', function() {
         additionalErrorBox.innerHTML = '<i class="fa fa-warning me-2"></i>No PDF file was uploaded or extracted.';
         additionalErrorBox.className = 'alert alert-warning';
         return;
+      }
+
+      const salespersonSelect = document.getElementById('additionalSalespersonSelect');
+      if (salespersonSelect && salespersonSelect.value) {
+        let salespersonInput = additionalInvoiceForm.querySelector(`[name="salesperson_id"]`);
+        if (!salespersonInput) {
+          salespersonInput = document.createElement('input');
+          salespersonInput.type = 'hidden';
+          salespersonInput.name = 'salesperson_id';
+          additionalHiddenFieldsDiv.appendChild(salespersonInput);
+        }
+        salespersonInput.value = salespersonSelect.value;
       }
 
       addAdditionalInvoiceBtn.disabled = true;
@@ -5663,8 +5781,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function formatCurrency(amount) {
       return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       }).format(amount);

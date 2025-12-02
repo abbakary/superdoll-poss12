@@ -20,18 +20,19 @@ def determine_order_type_from_codes(item_codes: List[str]) -> Tuple[str, List[st
     - If item code found in LabourCode table -> map to its category (service or labour)
     - If item code NOT found -> treat as 'sales' (unmapped products/items)
     - If mixed categories detected -> 'mixed' type with all categories
+    - If no codes provided or cannot determine -> 'unspecified'
 
     Args:
         item_codes: List of item codes extracted from invoice
 
     Returns:
         Tuple of:
-        - order_type: 'labour', 'service', 'sales', or 'mixed'
+        - order_type: 'labour', 'service', 'sales', 'unspecified', or 'mixed'
         - categories: List of unique categories found (includes "sales" for unmapped)
         - mapping_info: Dict with code->category mappings and unmapped codes
     """
     if not item_codes:
-        return 'sales', [], {'mapped': {}, 'unmapped': [], 'categories_found': [], 'order_types_found': []}
+        return 'unspecified', [], {'mapped': {}, 'unmapped': [], 'categories_found': [], 'order_types_found': []}
 
     from tracker.models import LabourCode
 
@@ -80,8 +81,8 @@ def determine_order_type_from_codes(item_codes: List[str]) -> Tuple[str, List[st
 
     # Determine final order type
     if len(order_types_found) == 0:
-        final_order_type = 'sales'
-        final_categories = ['sales']
+        final_order_type = 'unspecified'
+        final_categories = []
     elif len(order_types_found) == 1:
         final_order_type = list(order_types_found)[0]
         final_categories = sorted(list(categories_found))
@@ -108,17 +109,18 @@ def determine_order_type_from_codes(item_codes: List[str]) -> Tuple[str, List[st
 def _normalize_category_to_order_type(category: str) -> str:
     """
     Normalize a labour code category to a valid order type.
-    
+
     Examples:
     - 'labour' -> 'labour'
     - 'tyre service' -> 'service'
     - 'tyre service / makill' -> 'service'
+    - None/empty -> 'unspecified'
     """
     if not category:
-        return 'sales'
-    
+        return 'unspecified'
+
     category_lower = category.lower().strip()
-    
+
     # Direct mapping
     if category_lower == 'labour':
         return 'labour'
@@ -162,5 +164,7 @@ def _format_type_name(order_type: str) -> str:
         return 'Sales'
     elif order_type == 'inquiry':
         return 'Inquiry'
+    elif order_type == 'unspecified':
+        return 'Unspecified'
     else:
         return order_type.title()

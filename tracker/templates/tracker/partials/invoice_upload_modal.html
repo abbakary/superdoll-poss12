@@ -295,6 +295,11 @@
   color: white;
 }
 
+.extracted-line-items-table .badge-unspecified {
+  background-color: #6c757d;
+  color: white;
+}
+
 @media (max-width: 1200px) {
   .extracted-line-items-table {
     font-size: 0.8rem;
@@ -673,10 +678,11 @@
       const categoryBadgeMap = {
         'badge-labour': { bg: 'bg-info', icon: 'fa-tools', text: 'Labour' },
         'badge-service': { bg: 'bg-primary', icon: 'fa-wrench', text: 'Service' },
-        'badge-sales': { bg: 'bg-success', icon: 'fa-shopping-cart', text: 'Sales' }
+        'badge-sales': { bg: 'bg-success', icon: 'fa-shopping-cart', text: 'Sales' },
+        'badge-unspecified': { bg: 'bg-secondary', icon: 'fa-question-circle', text: 'Unspecified' }
       };
 
-      const badgeInfo = categoryBadgeMap[colorClass] || categoryBadgeMap['badge-sales'];
+      const badgeInfo = categoryBadgeMap[colorClass] || categoryBadgeMap['badge-unspecified'];
       const categoryBadge = `<span class="badge ${badgeInfo.bg} rounded-pill"><i class="fa ${badgeInfo.icon} me-1"></i>${badgeInfo.text}</span>`;
 
       const row = document.createElement('tr');
