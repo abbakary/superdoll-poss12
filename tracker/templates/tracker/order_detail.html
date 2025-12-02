@@ -2108,6 +2108,22 @@
 
               <hr class="my-3">
 
+              <!-- Salesperson Selection (for sales items) -->
+              <div id="additionalSalespersonSection" class="mb-4" style="display:none;">
+                <h6 class="text-muted mb-3"><i class="fa fa-user-tie me-2"></i>Sales Information</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-medium">Salesperson *</label>
+                    <select id="additionalSalespersonSelect" class="form-select form-select-sm" required>
+                      <option value="">-- Select Salesperson --</option>
+                    </select>
+                    <small class="text-muted">Select the salesperson who made this sale</small>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-3" id="additionalSalespersonHr" style="display:none;">
+
               <!-- Extracted Line Items -->
               <div id="additionalExtractedLineItemsSection" class="card" style="display:none;">
                 <div class="card-header bg-light">
