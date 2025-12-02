@@ -22,6 +22,12 @@ from .utils import get_user_branch
 logger = logging.getLogger(__name__)
 
 
+def _get_category_display(category_code):
+    """Convert category code to display name using DelayReasonCategory choices"""
+    category_choices = dict(DelayReasonCategory.CATEGORY_CHOICES)
+    return category_choices.get(category_code, category_code)
+
+
 @login_required
 @permission_required('tracker.view_order', raise_exception=True)
 def delay_analytics_dashboard(request):
@@ -155,14 +161,24 @@ def api_delay_analytics_summary(request):
     avg_hours = total_duration / delayed_orders_with_times.count() if delayed_orders_with_times.exists() else 0
     
     # Most common delay reasons
-    top_reasons = orders_qs.values(
+    top_reasons_raw = orders_qs.values(
         'delay_reason__reason_text',
-        'delay_reason__category__get_category_display'
+        'delay_reason__category__category'
     ).annotate(
         count=Count('id'),
         percentage=Cast(Count('id') * 100.0 / total_delayed, FloatField())
     ).order_by('-count')[:10]
-    
+
+    top_reasons = []
+    for item in top_reasons_raw:
+        top_reasons.append({
+            'delay_reason__reason_text': item['delay_reason__reason_text'],
+            'delay_reason__category__category': item['delay_reason__category__category'],
+            'delay_reason__category__get_category_display': _get_category_display(item['delay_reason__category__category']),
+            'count': item['count'],
+            'percentage': item['percentage'],
+        })
+
     return JsonResponse({
         'success': True,
         'summary': {
@@ -172,7 +188,7 @@ def api_delay_analytics_summary(request):
             'exceeded_9_hours': exceeded_9_hours_count,
             'average_hours': round(avg_hours, 1),
         },
-        'top_reasons': list(top_reasons)
+        'top_reasons': top_reasons
     })
 
 
@@ -196,19 +212,18 @@ def api_delay_reasons_breakdown(request):
     
     # Breakdown by category
     category_breakdown = orders_qs.values(
-        'delay_reason__category__category',
-        'delay_reason__category__get_category_display'
+        'delay_reason__category__category'
     ).annotate(
         count=Count('id')
     ).order_by('-count')
-    
+
     total = sum(item['count'] for item in category_breakdown)
-    
+
     data = []
     for item in category_breakdown:
         data.append({
             'category': item['delay_reason__category__category'],
-            'category_name': item['delay_reason__category__get_category_display'],
+            'category_name': _get_category_display(item['delay_reason__category__category']),
             'count': item['count'],
             'percentage': round(item['count'] / total * 100, 1) if total > 0 else 0,
         })
@@ -414,14 +429,24 @@ def api_delay_impact_analysis(request):
     ).filter(delay_count__gte=2).count()
     
     # Get most problematic reasons by impact
-    reason_impact = orders_qs.values(
+    reason_impact_raw = orders_qs.values(
         'delay_reason__reason_text',
-        'delay_reason__category__get_category_display'
+        'delay_reason__category__category'
     ).annotate(
         count=Count('id'),
         affected_customers=Count('customer', distinct=True)
     ).order_by('-count')[:5]
-    
+
+    reason_impact = []
+    for item in reason_impact_raw:
+        reason_impact.append({
+            'delay_reason__reason_text': item['delay_reason__reason_text'],
+            'delay_reason__category__category': item['delay_reason__category__category'],
+            'delay_reason__category__get_category_display': _get_category_display(item['delay_reason__category__category']),
+            'count': item['count'],
+            'affected_customers': item['affected_customers'],
+        })
+
     return JsonResponse({
         'success': True,
         'impact': {
@@ -430,7 +455,7 @@ def api_delay_impact_analysis(request):
             'customers_with_repeat_delays': customers_with_delays,
             'total_unique_customers_affected': orders_qs.values('customer').distinct().count(),
         },
-        'reason_impact': list(reason_impact)
+        'reason_impact': reason_impact
     })
 
 
@@ -456,18 +481,18 @@ def api_delay_recommendations(request):
     
     # Analysis 1: Most common category
     category_counts = orders_qs.values(
-        'delay_reason__category__category',
-        'delay_reason__category__get_category_display'
+        'delay_reason__category__category'
     ).annotate(count=Count('id')).order_by('-count')
-    
+
     if category_counts.exists():
         top_cat = category_counts[0]
         if top_cat['count'] > orders_qs.count() * 0.3:
+            category_display = _get_category_display(top_cat['delay_reason__category__category'])
             recommendations.append({
                 'priority': 'high',
                 'category': 'Process Improvement',
-                'title': f"Address {top_cat['delay_reason__category__get_category_display']} Issues",
-                'description': f"{top_cat['delay_reason__category__get_category_display']} accounts for {round(top_cat['count'] / orders_qs.count() * 100, 1)}% of delays. Consider process improvements or resource allocation.",
+                'title': f"Address {category_display} Issues",
+                'description': f"{category_display} accounts for {round(top_cat['count'] / orders_qs.count() * 100, 1)}% of delays. Consider process improvements or resource allocation.",
                 'impact': 'high'
             })
     
