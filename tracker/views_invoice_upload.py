@@ -1093,17 +1093,24 @@ def api_create_invoice_from_upload(request):
                 logger.warning(f"Failed to update order from invoice: {e}")
 
             # Create OrderInvoiceLink to link invoice to order for display on order detail page
-            # This ensures additional invoices are shown in the "Additional Invoices" section
+            # Determine if this is the primary invoice by checking existing invoices for the order
             if order and inv:
                 try:
                     from .models import OrderInvoiceLink
+
+                    # Check if this order already has a primary invoice
+                    existing_primary = OrderInvoiceLink.objects.filter(order=order, is_primary=True).exists()
+
+                    # This is the primary invoice if no primary exists yet
+                    is_primary_invoice = not existing_primary
+
                     link, created = OrderInvoiceLink.objects.get_or_create(
                         order=order,
                         invoice=inv,
-                        defaults={'is_primary': False}
+                        defaults={'is_primary': is_primary_invoice}
                     )
                     if created:
-                        logger.info(f"Created OrderInvoiceLink for invoice {inv.id} to order {order.id}")
+                        logger.info(f"Created OrderInvoiceLink for invoice {inv.id} to order {order.id} (is_primary={is_primary_invoice})")
                     else:
                         logger.info(f"OrderInvoiceLink already exists for invoice {inv.id} and order {order.id}")
                 except Exception as e:
