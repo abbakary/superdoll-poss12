@@ -1605,7 +1605,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if (exceeds9Hours) {
         const selectedReason = delayReasonDropdown.value;
         if (!selectedReason) {
-          delayReasonError.textContent = 'Order has exceeded 9 working hours. Please select a delay reason before completing.';
+          delayReasonError.textContent = 'Order has exceeded 2 hours. Please select a delay reason before completing.';
           delayReasonError.style.display = 'block';
           return false;
         }
