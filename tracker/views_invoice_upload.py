@@ -546,12 +546,14 @@ def api_create_invoice_from_upload(request):
                         if not existing_customer:
                             old_code = customer_obj.code
                             customer_obj.code = extracted_code_no
-                            customer_obj.save(update_fields=['code'])
+                            _save_with_retry(customer_obj, update_fields=['code'])
                             logger.info(f"Updated customer {customer_obj.id} code from {old_code} to {extracted_code_no} in branch {customer_obj.branch}")
                         else:
                             logger.warning(f"Code {extracted_code_no} already used by another customer {existing_customer.id} in branch {customer_obj.branch}, keeping current code")
                 except Exception as e:
                     logger.warning(f"Failed to update customer code with extracted code_no: {e}")
+                    # Don't let this error break the rest of the transaction
+                    # Continue processing the invoice
 
             # Extract plate from reference if not explicitly provided
             # The reference field from invoice may contain the vehicle plate number
