@@ -59,9 +59,7 @@
                             <select class="form-select" id="userFilter" name="user">
                                 <option value="">All Members</option>
                                 {% for user in users %}
-                                    <option value="{{ user.id }}" {% if selected_user|stringformat:"s" == user.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ user.first_name }} {{ user.last_name|default:user.username }}
-                                    </option>
+                                    <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name|default:user.username }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -400,9 +398,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest"></script>
 <script>
-    const apiBaseUrl = "{% url 'tracker:api_delay_analytics_summary' %}";
-
-    // Get current filters
     function getFilters() {
         return {
             period: document.getElementById('periodFilter').value,
@@ -412,13 +407,11 @@
         };
     }
 
-    // Update all data
     async function updateAnalytics() {
         const filters = getFilters();
         const params = new URLSearchParams(filters);
 
         try {
-            // Load summary
             const summaryResp = await fetch("{% url 'tracker:api_delay_analytics_summary' %}" + "?" + params);
             const summary = await summaryResp.json();
 
@@ -427,46 +420,39 @@
                 document.getElementById('delayRate').textContent = summary.summary.delay_percentage + '%';
                 document.getElementById('exceeded9Hours').textContent = summary.summary.exceeded_9_hours;
                 document.getElementById('avgDuration').textContent = summary.summary.average_hours;
-
                 updateTopReasons(summary.top_reasons);
             }
 
-            // Load trends
             const trendsResp = await fetch("{% url 'tracker:api_delay_trends' %}" + "?" + params);
             const trends = await trendsResp.json();
             if (trends.success) {
                 updateDelayTrendsChart(trends.data);
             }
 
-            // Load category breakdown
             const categoryResp = await fetch("{% url 'tracker:api_delay_reasons_breakdown' %}" + "?" + params);
             const category = await categoryResp.json();
             if (category.success) {
                 updateCategoryChart(category.data);
             }
 
-            // Load order type breakdown
             const typeResp = await fetch("{% url 'tracker:api_delay_by_order_type' %}" + "?" + params);
             const typeData = await typeResp.json();
             if (typeData.success) {
                 updateTypeChart(typeData.data);
             }
 
-            // Load user breakdown
             const userResp = await fetch("{% url 'tracker:api_delay_by_user' %}" + "?" + params);
             const userData = await userResp.json();
             if (userData.success) {
                 updateUserChart(userData.data);
             }
 
-            // Load impact analysis
             const impactResp = await fetch("{% url 'tracker:api_delay_impact_analysis' %}" + "?" + params);
             const impact = await impactResp.json();
             if (impact.success) {
                 updateImpactMetrics(impact.impact);
             }
 
-            // Load recommendations
             const recResp = await fetch("{% url 'tracker:api_delay_recommendations' %}" + "?" + params);
             const recommendations = await recResp.json();
             if (recommendations.success) {
@@ -474,21 +460,19 @@
             }
         } catch (error) {
             console.error('Error loading analytics:', error);
-            alert('Error loading analytics data. Please try again.');
         }
     }
 
-    // Update charts
     function updateDelayTrendsChart(data) {
         const dates = data.map(d => d.date);
         const delayedCounts = data.map(d => d.delayed_count);
         const delayRates = data.map(d => d.delay_rate);
 
         const options = {
-            chart: { type: 'area', height: 300, sparkline: { enabled: false } },
+            chart: { type: 'area', height: 300 },
             series: [
-                { name: 'Delayed Orders', data: delayedCounts, color: '#dc3545' },
-                { name: 'Delay Rate %', data: delayRates, color: '#ffc107' }
+                { name: 'Delayed Orders', data: delayedCounts },
+                { name: 'Delay Rate %', data: delayRates }
             ],
             xaxis: { categories: dates },
             yaxis: [
@@ -510,15 +494,8 @@
             chart: { type: 'donut', height: 300 },
             labels: labels,
             series: values,
-            colors: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#fd7e14'],
-            plotOptions: {
-                pie: { donut: { size: '65%' } }
-            },
-            tooltip: {
-                y: {
-                    formatter: function(val) { return val + ' orders'; }
-                }
-            }
+            plotOptions: { pie: { donut: { size: '65%' } } },
+            tooltip: { y: { formatter: function(val) { return val + ' orders'; } } }
         };
 
         const chart = new ApexCharts(document.getElementById('delayByCategoryChart'), options);
@@ -533,8 +510,7 @@
             chart: { type: 'bar', height: 300 },
             series: [{ name: 'Orders', data: values }],
             xaxis: { categories: labels },
-            colors: ['#007bff'],
-            plotOptions: { bar: { distributed: false } }
+            colors: ['#007bff']
         };
 
         const chart = new ApexCharts(document.getElementById('delayByTypeChart'), options);
@@ -549,7 +525,6 @@
             chart: { type: 'bar', height: 350 },
             series: [{ name: 'Delay Count', data: values }],
             xaxis: { categories: labels },
-            colors: ['#007bff'],
             plotOptions: { bar: { horizontal: true } }
         };
 
@@ -590,7 +565,6 @@
                         <h6 class="d-inline-block">${r.title}</h6>
                         <p class="mb-0 text-muted small mt-1">${r.description}</p>
                     </div>
-                    <span class="badge bg-${r.impact === 'critical' ? 'danger' : r.impact === 'high' ? 'warning' : 'info'}">${r.impact}</span>
                 </div>
             </div>
         `).join('');
@@ -598,7 +572,6 @@
         document.getElementById('recommendationsContainer').innerHTML = html || '<p class="text-muted">No recommendations available</p>';
     }
 
-    // Event listeners
     document.getElementById('applyFiltersBtn').addEventListener('click', updateAnalytics);
     document.getElementById('resetFiltersBtn').addEventListener('click', () => {
         document.getElementById('periodFilter').value = '30days';
@@ -610,7 +583,6 @@
 
     document.getElementById('refreshBtn').addEventListener('click', updateAnalytics);
 
-    // Initial load
     document.addEventListener('DOMContentLoaded', updateAnalytics);
 </script>
 {% endblock %}
