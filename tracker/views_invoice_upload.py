@@ -426,7 +426,7 @@ def api_create_invoice_from_upload(request):
                                 customer_obj.organization_name = org_name
                             if tax_num:
                                 customer_obj.tax_number = tax_num
-                            customer_obj.save()
+                            _save_with_retry(customer_obj)
                             logger.info(f"Updated temporary customer {customer_obj.id} with extracted details from invoice")
                 except Exception as e:
                     logger.warning(f"Failed to check/update temporary customer: {e}")
