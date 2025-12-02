@@ -117,7 +117,7 @@ def estimate_completion_time(started_at: datetime, estimated_minutes: int = None
 
     Args:
         started_at: Order start datetime
-        estimated_minutes: Estimated duration in minutes (defaults to 9 hours)
+        estimated_minutes: Estimated duration in minutes (defaults to 2 hours)
 
     Returns:
         Dictionary with:
