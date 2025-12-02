@@ -151,6 +151,7 @@ def _get_item_code_categories(item_codes):
             'labour': 'badge-labour',
             'service': 'badge-service',
             'sales': 'badge-sales',
+            'unspecified': 'badge-unspecified',
         }
 
         result[code] = {
