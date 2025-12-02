@@ -381,7 +381,7 @@ def api_delay_by_user(request):
             'user_id': item['delay_reason_reported_by__id'],
             'user_name': user_name,
             'delay_count': item['count'],
-            'exceeded_9h_count': item['exceeded_9h_count'],
+            'exceeded_2h_count': item['exceeded_2h_count'],
         })
     
     return JsonResponse({
