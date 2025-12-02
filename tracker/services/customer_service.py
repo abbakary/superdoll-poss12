@@ -3,6 +3,7 @@ Centralized service for creating and managing customers, vehicles, and orders.
 This ensures consistent deduplication, visit tracking, and code generation across all flows.
 """
 
+import json
 import logging
 from decimal import Decimal
 from datetime import datetime
